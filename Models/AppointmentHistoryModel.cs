@@ -15,5 +15,6 @@ namespace PMS.SchedulerAPI.Models
         public string Reason { get; set; }
         public int? ModifiedBy { get; set; }
         public DateTime? ModifiedDate { get; set; }
+        public string PhysicianName { get; set; }
     }
 }
