@@ -281,7 +281,8 @@ namespace PMS.SchedulerAPI
                     ModifiedBy = e.ModifiedBy,
                     ModifiedDate = e.ModifiedDate,
                     Reason = e.Reason,
-                    PhysicianName = _context.Users.Where(a => a.UserId == e.ModifiedBy).Select(e => e.FirstName + " " + e.LastName).FirstOrDefault()
+                    CreatedbyName = _context.Users.Where(a => a.UserId == e.Createdby).Select(e => e.FirstName + " " + e.LastName).FirstOrDefault(),
+                    ModifiedByName = _context.Users.Where(a => a.UserId == e.ModifiedBy).Select(e => e.FirstName + " " + e.LastName).FirstOrDefault()
                 }).ToListAsync();
             return list;
         }
