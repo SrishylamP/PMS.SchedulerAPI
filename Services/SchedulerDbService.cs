@@ -322,6 +322,34 @@ namespace PMS.SchedulerAPI
                             ).ToListAsync();
             return list;
         }
+
+        public async Task<List<AppointmentModel>> GetAllDeclinedAppointments()
+        {
+            var list = await _context.Appointments
+                .Where(e => e.IsDeleted == true)
+                .Select(e => new AppointmentModel
+                {
+                    Title = e.Title,
+                    Description = e.Description,
+                    AppointmentId = e.AppointmentId,
+                    AppointmentStatus = e.AppointmentStatus,
+                    AppointmentTime = e.AppointmentTime,
+                    AppointmentDate = e.AppointmentDate,
+                    CreatedBy = e.CreatedBy,
+                    CreatedDate = e.CreatedDate,
+                    ModifiedBy = e.ModifiedBy,
+                    ModifiedDate = e.ModifiedDate,
+                    PatientId = e.PatientId,
+                    PhysicianId = e.PhysicianId,
+                    AppointmentSlotId = e.AppointmentSlotId,
+                    CreatedByName = _context.Users.Where(a => a.UserId == e.CreatedBy).Select(e => e.FirstName + " " + e.LastName).FirstOrDefault(),
+                    PhysicianName = _context.Users.Where(a => a.UserId == e.PhysicianId).Select(e => e.FirstName + " " + e.LastName).FirstOrDefault(),
+                    PhysicianEmployeeId = _context.Users.Where(a => a.UserId == e.PhysicianId).Select(e => e.EmployeeId).FirstOrDefault(),
+                    PatientName = _context.Users.Where(a => a.UserId == e.PatientId).Select(e => e.FirstName + " " + e.LastName).FirstOrDefault(),
+                    Reason = _context.AppointmentHistories.Where(a => a.AppointmentId == e.AppointmentId).OrderByDescending(a => a.AppointmentHistoryId).Select(e => e.Reason).FirstOrDefault(),
+                }).ToListAsync();
+            return list;
+        }
         public void AuditMe(AuditModel model)
         {
             var aObj = new Audit
