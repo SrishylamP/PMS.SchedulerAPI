@@ -104,12 +104,10 @@ namespace PMS.SchedulerAPI
                 {
                     AppointmentId = aptObj.AppointmentId,
                     Reason = model.Reason,
-                    AppointmentDate = aptObj.AppointmentDate,
-                    AppointmentTime = aptObj.AppointmentTime,
-                    Createdby = aptObj.CreatedBy,
-                    CreatedDate = aptObj.CreatedDate,
-                    ModifiedBy = model.ModifiedBy,
-                    ModifiedDate = DateTime.Now
+                    AppointmentDate = model.AppointmentDate,
+                    AppointmentTime = model.AppointmentTime,
+                    Createdby = model.CreatedBy,
+                    CreatedDate = DateTime.Now
                 };
                 await _context.AppointmentHistories.AddAsync(ahObj);
                 aptObj.Title = model.Title;
