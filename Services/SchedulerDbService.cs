@@ -313,12 +313,12 @@ namespace PMS.SchedulerAPI
                 }).ToListAsync();
             return list;
         }
-        public async Task<List<PhysicianModel>> GetPhysiciansByPatient(int patientId)
+        public async Task<List<UserModel>> GetPhysiciansByPatient(int patientId)
         {
             var list = await (from ap in _context.Appointments 
                               join u in _context.Users on ap.PhysicianId equals u.UserId
                               where ap.PatientId == patientId && ap.AppointmentStatus=="Closed"
-                              select new PhysicianModel { Id = u.UserId, Name = u.FirstName + " " + u.LastName }
+                              select new UserModel { UserId = u.UserId, FirstName = u.FirstName ,LastName = u.LastName, EmployeeId = u.EmployeeId }
                             ).ToListAsync();
             return list;
         }

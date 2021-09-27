@@ -15,7 +15,7 @@ namespace PMS.SchedulerAPI
         Task<bool> DeleteAppointment(AppointmentModel model);
         Task<List<AppointmentHistoryModel>> GetAppointmentHistoryByAppointmentId(int appointmentId);
         Task<List<AppointmentModel>> GetDataCollectionAppointmentsByPatient(int patientId);
-        Task<List<PhysicianModel>> GetPhysiciansByPatient(int patientId);
+        Task<List<UserModel>> GetPhysiciansByPatient(int patientId);
         Task<List<AppointmentModel>> GetAllDeclinedAppointments();
         Task<List<AppointmentModel>> GetAllDeclinedDataCollectionAppointments();
     }
