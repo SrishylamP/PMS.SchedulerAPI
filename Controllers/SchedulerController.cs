@@ -176,5 +176,23 @@ namespace PMS.SchedulerAPI.Controllers
 
         }
 
+        [HttpGet]
+        [Route("GetAllDeclinedDataCollectionAppointments")]
+        public async Task<IActionResult> GetAllDeclinedDataCollectionAppointments()
+        {
+            try
+            {
+                var result = await this.SchedulerService.GetAllDeclinedDataCollectionAppointments();
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                logger.Log(LogLevel.Error, ex, ex.Message);
+                return BadRequest(ex);
+
+            }
+
+        }
+
     }
 }

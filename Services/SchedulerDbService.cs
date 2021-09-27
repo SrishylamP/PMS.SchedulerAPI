@@ -316,7 +316,7 @@ namespace PMS.SchedulerAPI
         public async Task<List<PhysicianModel>> GetPhysiciansByPatient(int patientId)
         {
             var list = await (from ap in _context.Appointments 
-                              join u in _context.Users on ap.PatientId equals u.UserId
+                              join u in _context.Users on ap.PhysicianId equals u.UserId
                               where ap.PatientId == patientId && ap.AppointmentStatus=="Closed"
                               select new PhysicianModel { Id = u.UserId, Name = u.FirstName + " " + u.LastName }
                             ).ToListAsync();
@@ -327,6 +327,34 @@ namespace PMS.SchedulerAPI
         {
             var list = await _context.Appointments
                 .Where(e => e.IsDeleted == true)
+                .Select(e => new AppointmentModel
+                {
+                    Title = e.Title,
+                    Description = e.Description,
+                    AppointmentId = e.AppointmentId,
+                    AppointmentStatus = e.AppointmentStatus,
+                    AppointmentTime = e.AppointmentTime,
+                    AppointmentDate = e.AppointmentDate,
+                    CreatedBy = e.CreatedBy,
+                    CreatedDate = e.CreatedDate,
+                    ModifiedBy = e.ModifiedBy,
+                    ModifiedDate = e.ModifiedDate,
+                    PatientId = e.PatientId,
+                    PhysicianId = e.PhysicianId,
+                    AppointmentSlotId = e.AppointmentSlotId,
+                    CreatedByName = _context.Users.Where(a => a.UserId == e.CreatedBy).Select(e => e.FirstName + " " + e.LastName).FirstOrDefault(),
+                    PhysicianName = _context.Users.Where(a => a.UserId == e.PhysicianId).Select(e => e.FirstName + " " + e.LastName).FirstOrDefault(),
+                    PhysicianEmployeeId = _context.Users.Where(a => a.UserId == e.PhysicianId).Select(e => e.EmployeeId).FirstOrDefault(),
+                    PatientName = _context.Users.Where(a => a.UserId == e.PatientId).Select(e => e.FirstName + " " + e.LastName).FirstOrDefault(),
+                    Reason = _context.AppointmentHistories.Where(a => a.AppointmentId == e.AppointmentId).OrderByDescending(a => a.AppointmentHistoryId).Select(e => e.Reason).FirstOrDefault(),
+                }).ToListAsync();
+            return list;
+        }
+
+        public async Task<List<AppointmentModel>> GetAllDeclinedDataCollectionAppointments()
+        {
+            var list = await _context.Appointments
+                .Where(e => e.IsDeleted == true && e.AppointmentType == "Data Collection")
                 .Select(e => new AppointmentModel
                 {
                     Title = e.Title,
