@@ -99,7 +99,9 @@ namespace PMS.SchedulerAPI
                 var currentDate = Convert.ToString(model.AppointmentDate.ToLocalTime().ToString("dd/MM/yyyy"));
                 var modifiedDate = DateTime.ParseExact(currentDate, "dd/MM/yyyy", null);
                 var aptObj = _context.Appointments.FirstOrDefault(e => e.AppointmentId == model.AppointmentId);
-
+                var oldAptDate = _context.Appointments.Where(e => e.AppointmentId == model.AppointmentId).Select(e=>e.AppointmentDate).FirstOrDefault();
+                var oldAptTime = _context.Appointments.Where(e => e.AppointmentId == model.AppointmentId).Select(e => e.AppointmentTime).FirstOrDefault(); ;
+               
                 AppointmentHistory ahObj = new AppointmentHistory
                 {
                     AppointmentId = aptObj.AppointmentId,
@@ -151,15 +153,17 @@ namespace PMS.SchedulerAPI
 
                 //Email to patient
                 Common.SendEmail(patient.FirstName, Constants.FromEmail, patient.Email, Constants.EditAppointmentSubject,
-                Constants.AppointmentRescheduledSuccessfully + "<br/> Title: " + model.Title +" <br/> Rescheduled By: " + ModifiedByName + " <br/> Rescheduled Appointment Date: " + model.AppointmentDate.ToShortDateString()
-                + "<br/> Rescheduled Appointment Slot:  " + model.AppointmentTime + " <br/> Previous Appointment Date: " + aptObj.AppointmentDate.ToShortDateString()
-                + "<br/> Rescheduled Appointment Slot:  " + aptObj.AppointmentTime+ " <br/> Physician: " + Physician.FirstName + " " + Physician.LastName);
+                Constants.AppointmentRescheduledSuccessfully + "<br/><br/> <b>Title :</b>  " + model.Title +" <br/> <b>Rescheduled By :</b>  " 
+                + ModifiedByName + " <br/> <b>Rescheduled Appointment Date :</b> " + model.AppointmentDate.ToShortDateString()
+                + "<br/> <b>Rescheduled Appointment Slot :</b>  " + model.AppointmentTime + " <br/> <b>Previous Appointment Date :</b>  " + oldAptDate.ToShortDateString()
+                + "<br/> <b>Previous Appointment Slot :</b>  " + oldAptTime+ " <br/> <b>Physician :</b>  " + Physician.FirstName + " " + Physician.LastName);
 
                 //Email to Physician
                 Common.SendEmail(Physician.FirstName, Constants.FromEmail, Physician.Email, Constants.EditAppointmentSubject,
-                    Constants.AppointmentRescheduledSuccessfully + "<br/> Title: " + model.Title + " <br/> Rescheduled By: " + ModifiedByName + " <br/> Rescheduled Appointment Date: " + model.AppointmentDate.ToShortDateString()
-                + "<br/> Rescheduled Appointment Slot:  " + model.AppointmentTime + " <br/> Previous Appointment Date: " + aptObj.AppointmentDate.ToShortDateString()
-                + "<br/> Rescheduled Appointment Slot:  " + aptObj.AppointmentTime + " <br/> Patient: " + patient.FirstName + " " + patient.LastName);
+                    Constants.AppointmentRescheduledSuccessfully + "<br/><br/>  <b>Title :</b> " + model.Title + " <br/>  <b>Rescheduled By :</b> " + ModifiedByName
+                    + " <br/>  <b>Rescheduled Appointment Date :</b> " + model.AppointmentDate.ToShortDateString()
+                + "<br/>  <b>Rescheduled Appointment Slot :</b>  " + model.AppointmentTime + " <br/>  <b>Previous Appointment Date :</b> " + oldAptDate.ToShortDateString()
+                + "<br/>  <b>Previous Appointment Slot :</b>  " + oldAptTime + " <br/>  <b>Patient :</b> " + patient.FirstName + " " + patient.LastName);
 
                 //Constants.AppointmentRescheduledSuccessfully + "<br/> Title: " + model.Title + " <br/> Rescheduled By: " + ModifiedByName + " <br/> Date: " + model.AppointmentDate.ToShortDateString() + ", " +
                 //    model.AppointmentTime + " was(" + ahObj.AppointmentDate.ToShortDateString() + ", " + ahObj.AppointmentTime + ") <br/> Patient: " + patient.FirstName + " " + patient.LastName);
