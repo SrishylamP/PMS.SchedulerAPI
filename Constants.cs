@@ -28,10 +28,11 @@ namespace PMS.SchedulerAPI
         public const string ActivateUserSubject = "Activate your account";
         public const string AppointmentSubject = "Appointment Scheduled ";
         public const string AppointmentBookedSuccessfully = "Your appointment booked successfully ";
-        public const string AppointmentUpdatedSuccessfully = "Your appointment updated successfully ";
+        public const string AppointmentRescheduledSuccessfully = "Your appointment rescheduled successfully ";
         public const string AppointmentCancelledSuccessfully = "Your appointment is successfully canceled ";
         public const string AppointmentCancelledSubject = "Appointment Cancelled ";
-        
+        public const string EditAppointmentSubject = "Appointment Rescheduled";
+
 
 
         public const string ModelIsEmpty = "Model is empty";

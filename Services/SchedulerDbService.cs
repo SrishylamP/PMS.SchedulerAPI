@@ -8,7 +8,7 @@ using PMS.SchedulerAPI.Models;
 
 namespace PMS.SchedulerAPI
 {
-    public class SchedulerDbService:ISchedulerService
+    public class SchedulerDbService : ISchedulerService
     {
         private readonly PMSDbContext _context;
         public SchedulerDbService(PMSDbContext context)
@@ -107,7 +107,9 @@ namespace PMS.SchedulerAPI
                     AppointmentDate = model.AppointmentDate,
                     AppointmentTime = model.AppointmentTime,
                     Createdby = model.CreatedBy,
-                    CreatedDate = DateTime.Now
+                    CreatedDate = DateTime.Now,
+                    ModifiedBy = model.ModifiedBy,
+                    ModifiedDate = DateTime.Now
                 };
                 await _context.AppointmentHistories.AddAsync(ahObj);
                 aptObj.Title = model.Title;
@@ -141,20 +143,26 @@ namespace PMS.SchedulerAPI
                 };
                 AuditMe(auditobj);
                 resObj.IsSuccess = true;
-                resObj.message = Constants.AppointmentUpdatedSuccessfully;
+                resObj.message = Constants.AppointmentRescheduledSuccessfully;
 
                 var Physician = _context.Users.FirstOrDefault(e => e.UserId == model.PhysicianId);
                 var patient = _context.Users.FirstOrDefault(e => e.UserId == model.PatientId);
+                var ModifiedByName = _context.Users.Where(e => e.UserId == model.ModifiedBy).Select(e => e.FirstName + " " + e.LastName).FirstOrDefault();
 
                 //Email to patient
-                Common.SendEmail(patient.FirstName, Constants.FromEmail, patient.Email, Constants.AppointmentSubject,
-                    Constants.AppointmentUpdatedSuccessfully + "<br/> Title: " + model.Title + " <br/> Date: " + model.AppointmentDate.ToShortDateString() + ", " +
-                    model.AppointmentTime + " was(" + ahObj.AppointmentDate.ToShortDateString() + ", " + ahObj.AppointmentTime + ") <br/> Physician: " + Physician.FirstName + " " + Physician.LastName);
+                Common.SendEmail(patient.FirstName, Constants.FromEmail, patient.Email, Constants.EditAppointmentSubject,
+                Constants.AppointmentRescheduledSuccessfully + "<br/> Title: " + model.Title +" <br/> Rescheduled By: " + ModifiedByName + " <br/> Rescheduled Appointment Date: " + model.AppointmentDate.ToShortDateString()
+                + "<br/> Rescheduled Appointment Slot:  " + model.AppointmentTime + " <br/> Previous Appointment Date: " + aptObj.AppointmentDate.ToShortDateString()
+                + "<br/> Rescheduled Appointment Slot:  " + aptObj.AppointmentTime+ " <br/> Physician: " + Physician.FirstName + " " + Physician.LastName);
 
                 //Email to Physician
-                Common.SendEmail(Physician.FirstName, Constants.FromEmail, Physician.Email, Constants.AppointmentSubject,
-                    Constants.AppointmentUpdatedSuccessfully + "<br/> Title: " + model.Title + " <br/> Date: " + model.AppointmentDate.ToShortDateString() + ", " +
-                    model.AppointmentTime + " was(" + ahObj.AppointmentDate.ToShortDateString() + ", " + ahObj.AppointmentTime + ") <br/> Patient: " + patient.FirstName + " " + patient.LastName);
+                Common.SendEmail(Physician.FirstName, Constants.FromEmail, Physician.Email, Constants.EditAppointmentSubject,
+                    Constants.AppointmentRescheduledSuccessfully + "<br/> Title: " + model.Title + " <br/> Rescheduled By: " + ModifiedByName + " <br/> Rescheduled Appointment Date: " + model.AppointmentDate.ToShortDateString()
+                + "<br/> Rescheduled Appointment Slot:  " + model.AppointmentTime + " <br/> Previous Appointment Date: " + aptObj.AppointmentDate.ToShortDateString()
+                + "<br/> Rescheduled Appointment Slot:  " + aptObj.AppointmentTime + " <br/> Patient: " + patient.FirstName + " " + patient.LastName);
+
+                //Constants.AppointmentRescheduledSuccessfully + "<br/> Title: " + model.Title + " <br/> Rescheduled By: " + ModifiedByName + " <br/> Date: " + model.AppointmentDate.ToShortDateString() + ", " +
+                //    model.AppointmentTime + " was(" + ahObj.AppointmentDate.ToShortDateString() + ", " + ahObj.AppointmentTime + ") <br/> Patient: " + patient.FirstName + " " + patient.LastName);
                 return resObj;
             }
             catch (Exception ex)
@@ -313,12 +321,39 @@ namespace PMS.SchedulerAPI
                 }).ToListAsync();
             return list;
         }
+
+        public async Task<List<AppointmentModel>> GetAllDataCollectionAppointments()
+        {
+            var list = await _context.Appointments
+                .Where(e => !e.IsDeleted && e.AppointmentType == "Data Collection")
+                .Select(e => new AppointmentModel
+                {
+                    Title = e.Title,
+                    Description = e.Description,
+                    AppointmentId = e.AppointmentId,
+                    AppointmentStatus = e.AppointmentStatus,
+                    AppointmentType = e.AppointmentType,
+                    AppointmentTime = e.AppointmentTime,
+                    AppointmentDate = e.AppointmentDate,
+                    CreatedBy = e.CreatedBy,
+                    CreatedDate = e.CreatedDate,
+                    PatientId = e.PatientId,
+                    PhysicianId = e.PhysicianId,
+                    AppointmentSlotId = e.AppointmentSlotId,
+                    CreatedByName = _context.Users.Where(a => a.UserId == e.CreatedBy).Select(e => e.FirstName + " " + e.LastName).FirstOrDefault(),
+                    PhysicianName = _context.Users.Where(a => a.UserId == e.PhysicianId).Select(e => e.FirstName + " " + e.LastName).FirstOrDefault(),
+                    PhysicianEmployeeId = _context.Users.Where(a => a.UserId == e.PhysicianId).Select(e => e.EmployeeId).FirstOrDefault(),
+                    PatientName = _context.Users.Where(a => a.UserId == e.PatientId).Select(e => e.FirstName + " " + e.LastName).FirstOrDefault(),
+                    Reason = _context.AppointmentHistories.Where(a => a.AppointmentId == e.AppointmentId).OrderByDescending(a => a.AppointmentHistoryId).Select(e => e.Reason).FirstOrDefault(),
+                }).ToListAsync();
+            return list;
+        }
         public async Task<List<UserModel>> GetPhysiciansByPatient(int patientId)
         {
-            var list = await (from ap in _context.Appointments 
+            var list = await (from ap in _context.Appointments
                               join u in _context.Users on ap.PhysicianId equals u.UserId
-                              where ap.PatientId == patientId && ap.AppointmentStatus=="Closed"
-                              select new UserModel { UserId = u.UserId, FirstName = u.FirstName ,LastName = u.LastName, EmployeeId = u.EmployeeId }
+                              where ap.PatientId == patientId && ap.AppointmentStatus == "Closed"
+                              select new UserModel { UserId = u.UserId, FirstName = u.FirstName, LastName = u.LastName, EmployeeId = u.EmployeeId }
                             ).ToListAsync();
             return list;
         }
