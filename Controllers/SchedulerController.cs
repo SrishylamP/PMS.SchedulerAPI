@@ -211,5 +211,23 @@ namespace PMS.SchedulerAPI.Controllers
 
         }
 
+        [HttpPut]
+        [Route("CloseDataCollectionAppointment")]
+        public async Task<IActionResult> CloseDataCollectionAppointment([FromBody] int appointmentId)
+        {
+            try
+            {
+                var result = await this.SchedulerService.CloseDataCollectionAppointment(appointmentId);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                logger.Log(LogLevel.Error, ex, ex.Message);
+                return BadRequest(ex);
+
+            }
+
+        }
+
     }
 }

@@ -177,7 +177,7 @@ namespace PMS.SchedulerAPI
         public async Task<List<AppointmentModel>> GetAllAppointments()
         {
             var list = await _context.Appointments
-                .Where(e => !e.IsDeleted)
+                .Where(e => !e.IsDeleted && e.AppointmentType == null)
                 .Select(e => new AppointmentModel
                 {
                     Title = e.Title,
@@ -358,7 +358,7 @@ namespace PMS.SchedulerAPI
                               join u in _context.Users on ap.PhysicianId equals u.UserId
                               where ap.PatientId == patientId && ap.AppointmentStatus == "Closed"
                               select new UserModel { UserId = u.UserId, FirstName = u.FirstName, LastName = u.LastName, EmployeeId = u.EmployeeId }
-                            ).ToListAsync();
+                            ).Distinct().ToListAsync();
             return list;
         }
 
@@ -416,6 +416,20 @@ namespace PMS.SchedulerAPI
                     Reason = _context.AppointmentHistories.Where(a => a.AppointmentId == e.AppointmentId).OrderByDescending(a => a.AppointmentHistoryId).Select(e => e.Reason).FirstOrDefault(),
                 }).ToListAsync();
             return list;
+        }
+        public async Task<ResponseMessage> CloseDataCollectionAppointment(int appointmentId)
+        {
+            var resObj = new ResponseMessage();
+            var entity = _context.Appointments.Where(x => x.AppointmentId == appointmentId).FirstOrDefault();
+            if(entity != null)
+            {
+                entity.AppointmentStatus = "Closed";
+                _context.Appointments.Update(entity);
+                await _context.SaveChangesAsync();
+            }
+            resObj.message = Constants.AppointmentClosedSuccessfully;
+            resObj.IsSuccess = true;
+            return resObj;
         }
         public void AuditMe(AuditModel model)
         {

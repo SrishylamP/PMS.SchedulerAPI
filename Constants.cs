@@ -32,6 +32,7 @@ namespace PMS.SchedulerAPI
         public const string AppointmentCancelledSuccessfully = "Your appointment is successfully canceled ";
         public const string AppointmentCancelledSubject = "Appointment Cancelled ";
         public const string EditAppointmentSubject = "Appointment Rescheduled";
+        public const string AppointmentClosedSuccessfully = "Appointment Closed Successfully"; 
 
 
 

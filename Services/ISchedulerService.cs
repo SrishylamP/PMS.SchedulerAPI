@@ -19,5 +19,6 @@ namespace PMS.SchedulerAPI
         Task<List<UserModel>> GetPhysiciansByPatient(int patientId);
         Task<List<AppointmentModel>> GetAllDeclinedAppointments();
         Task<List<AppointmentModel>> GetAllDeclinedDataCollectionAppointments();
+        Task<ResponseMessage> CloseDataCollectionAppointment(int appointmentId);
     }
 }
